@@ -6,7 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Month;
+import java.time.temporal.TemporalAdjusters;
 
 @Data
 @AllArgsConstructor
@@ -28,5 +31,43 @@ public class ToolRental {
         EnumsForTools.ToolType toolType = EnumsForTools.ToolType.convertFromTypeCode(toolCode);
         double price = toolType.getTypePrice();
         return ( ((double) rentalDays * price) * (1.0 - discount));
+    }
+
+    public static int countFixedHolidays(LocalDate toolCheckoutDate, int toolCheckoutDuration) {
+        int counter = 0;
+        Month targetMonth = toolCheckoutDate.getMonth();
+        int targetDay = toolCheckoutDate.getDayOfMonth();
+        int toolFinalDay = targetDay + toolCheckoutDuration;
+        for (EnumsForTools.ToolFixedHoliday holiday : EnumsForTools.ToolFixedHoliday.values()) {
+            if (holiday.getMonth() == targetMonth) {
+                if ((holiday.getDay() >= targetDay) && (holiday.getDay() <= toolFinalDay)){
+                    counter++;
+                }
+            }
+        }
+        return counter;
+    }
+
+    public static int countFloatingHolidays(LocalDate toolCheckoutDate, int toolCheckoutDuration) {
+        int counter = 0;
+        Month targetMonth = toolCheckoutDate.getMonth();
+        int targetDay = toolCheckoutDate.getDayOfMonth();
+        int toolFinalDay = targetDay + toolCheckoutDuration;
+        for (EnumsForTools.ToolFloatingHoliday holiday : EnumsForTools.ToolFloatingHoliday.values()) {
+            if (holiday.getMonth() == targetMonth) {
+                int holidayDate = findFloatingHolidayDate(toolCheckoutDate);
+                if (holiday.getDatePattern() > 1) {
+                    holidayDate = holidayDate + (7 * (holiday.getDatePattern() - 1));
+                }
+                if ((holidayDate >= targetDay) && (holidayDate <= toolFinalDay)){
+                    counter++;
+                }
+            }
+        }
+        return counter;
+    }
+
+    public static int findFloatingHolidayDate(LocalDate targetDate) {
+        return targetDate.with(TemporalAdjusters.firstInMonth(DayOfWeek.MONDAY)).getDayOfMonth();
     }
 }

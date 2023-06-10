@@ -112,21 +112,22 @@ public class EnumsForTools {
 
     @Getter
     @AllArgsConstructor
-    public enum ToolFixedHolidays {
-        INDEPENDENCE_DAY("Independence Day", LocalDate.of(-1, 7,4));
+    public enum ToolFixedHoliday {
+        INDEPENDENCE_DAY("Independence Day", Month.JULY, 4);
 
         private String holidayString;
-        private LocalDate date;
+        private Month month;
+        private int day;
     }
 
     @Getter
     @AllArgsConstructor
-    public enum ToolFloatingHolidays {
+    public enum ToolFloatingHoliday {
         LABOR_DAY("Labor Day", Month.SEPTEMBER, DayOfWeek.MONDAY, 1);
 
         private String holidayString;
-        private Month holidayMonth;
-        private DayOfWeek holidayDayOfWeek;
-        private int holidayDatePattern;
+        private Month month;
+        private DayOfWeek dayOfWeek;
+        private int datePattern;
     }
 }
