@@ -2,8 +2,15 @@ package com.chahel.ch0623.entity;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ToolRental {
 
     @Id
@@ -12,18 +19,14 @@ public class ToolRental {
 
     private String toolCode;
     private String brandCode;
-    private String rentalDate;
-    private String rentalDuration;
+    private LocalDate rentalDate;
+    private int rentalDays;
     private double discount;
     private double finalCharge;
 
-    public ToolRental(Long id, String toolCode, String brandCode, String rentalDate, String rentalDuration, double discount, double finalCharge) {
-        this.id = id;
-        this.toolCode = toolCode;
-        this.brandCode = brandCode;
-        this.rentalDate = rentalDate;
-        this.rentalDuration = rentalDuration;
-        this.discount = discount;
-        this.finalCharge = finalCharge;
+    public static double calculateFinalCharge(String toolCode, int rentalDays, double discount) {
+        EnumsForTools.ToolType toolType = EnumsForTools.ToolType.convertFromTypeCode(toolCode);
+        double price = toolType.getTypePrice();
+        return ( ((double) rentalDays * price) * (1.0 - discount));
     }
 }

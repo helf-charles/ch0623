@@ -1,42 +1,43 @@
 package com.chahel.ch0623.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EnumsForTools {
-    public enum ToolBrand {
-        STIHL("Stihl", "S"),
-        WERNER("Werner", "W"),
-        DEWALT("De Walt", "D"),
-        RIDGID("Ridgid", "R");
 
-        private String brandString;
-        private String brandCode;
-
-        ToolBrand(String brandString, String brandCode) {
-            this.brandString = brandString;
-            this.brandCode = brandCode;
-        }
-
-        public String toString() {
-            return brandString + " " + brandCode;
-        }
-    }
-
+    @Getter
+    @AllArgsConstructor
     public enum ToolType {
-        CHAINSAW("Chainsaw", "CHN"),
-        LADDER("Ladder", "LAD"),
-        JACKHAMMER("Jackhammer", "JAK");
+        CHAINSAW("Chainsaw", "CHN", 1.49),
+        LADDER("Ladder", "LAD", 1.99),
+        JACKHAMMER("Jackhammer", "JAK", 2.99),
+        ERROR("Error", "ERR", 0.00);
 
         private String typeString;
         private String typeCode;
+        private double typePrice;
 
-        ToolType(String typeString, String typeCode) {
-            this.typeString = typeString;
-            this.typeCode = typeCode;
+        public static ToolType convertFromTypeCode(String typeCode) {
+            switch (typeCode) {
+                case "CHN":
+                    return ToolType.CHAINSAW;
+                case "LAD":
+                    return ToolType.LADDER;
+                case "JAK":
+                    return ToolType.JACKHAMMER;
+                default:
+                    return ToolType.ERROR;
+            }
         }
 
-        public List<ToolChargeDay> FindChargeableDays() {
+        public List<ToolChargeDay> findChargeableDays() {
             ArrayList<ToolChargeDay> result = new ArrayList();
             result.add(ToolChargeDay.WEEKDAY);
             switch (this) {
@@ -51,35 +52,81 @@ public class EnumsForTools {
         }
 
         public String toString() {
-            return typeString + " " + typeCode;
+            return typeString + " " + typeCode + " " + typePrice;
         }
     }
 
-    public enum ToolPrice {
-        CHAINSAW(1.99), LADDER(1.49), JACKHAMMER(2.49);
+    @Getter
+    @AllArgsConstructor
+    public enum ToolBrand {
+        STIHL("Stihl", "S"),
+        WERNER("Werner", "W"),
+        DEWALT("De Walt", "D"),
+        RIDGID("Ridgid", "R"),
+        ERROR("Error", "!");
 
-        private double priceDbl;
+        private String brandString;
+        private String brandCode;
 
-        ToolPrice (double priceDbl) {
-            this.priceDbl = priceDbl;
+        public static ToolBrand convertFromBrandCode(String brandCode) {
+            switch (brandCode) {
+                case "S":
+                    return ToolBrand.STIHL;
+                case "W":
+                    return ToolBrand.WERNER;
+                case "D":
+                    return ToolBrand.DEWALT;
+                case "R":
+                    return ToolBrand.RIDGID;
+                default:
+                    return ToolBrand.ERROR;
+            }
         }
 
         public String toString() {
-            return String.valueOf(priceDbl);
+            return brandString + " " + brandCode;
         }
     }
 
+    @Getter
+    @AllArgsConstructor
+    public enum ToolBrandPairings {
+        CHAINSAW("S"),
+        LADDER("W"),
+        JACKHAMMER("DR");
+
+        private String brandListString;
+    }
+
+    @Getter
+    @AllArgsConstructor
     public enum ToolChargeDay {
         WEEKDAY("Weekday"), WEEKEND("Weekend"), HOLIDAY("Holiday");
 
         private String toolChargeDay;
 
-        ToolChargeDay (String toolChargeDay) {
-            this.toolChargeDay = toolChargeDay;
-        }
-
         public String toString() {
             return toolChargeDay;
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public enum ToolFixedHolidays {
+        INDEPENDENCE_DAY("Independence Day", LocalDate.of(-1, 7,4));
+
+        private String holidayString;
+        private LocalDate date;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public enum ToolFloatingHolidays {
+        LABOR_DAY("Labor Day", Month.SEPTEMBER, DayOfWeek.MONDAY, 1);
+
+        private String holidayString;
+        private Month holidayMonth;
+        private DayOfWeek holidayDayOfWeek;
+        private int holidayDatePattern;
     }
 }
