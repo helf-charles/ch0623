@@ -46,13 +46,24 @@ public class ToolRentalTest {
 
     @Test
     void checkFixedHolidaysCorrectlyIdentified() {
-        int holidays = ToolRental.countFixedHolidays(dateFourth, 5);
+        int holidays = ToolRental.countFixedHolidays(dateFourth.getMonth(), dateFourth.getDayOfMonth(),
+                dateFourth.getDayOfMonth() + 5);
         assertEquals(1, holidays);
     }
 
     @Test
     void checkFloatingHolidaysCorrectlyIdentified() {
-        int holidays = ToolRental.countFloatingHolidays(dateFifth, 3);
+        int holidayDate = ToolRental.findFloatingHolidayDate(dateFifth);
+        System.out.println("Holiday date is " + holidayDate);
+        int holidays = ToolRental.countFloatingHolidays(dateFifth.getMonth(), dateFifth.getDayOfMonth(),
+                dateFifth.getDayOfMonth() + 3, holidayDate);
         assertEquals(1, holidays);
+    }
+
+    @Test
+    void checkWeekendsCorrectlyIdentified() {
+        int weekends = ToolRental.countWeekends(dateFirst.getDayOfWeek(), dateFirst.getDayOfMonth(),
+                dateFirst.getDayOfMonth() + 11);
+        assertEquals(4, weekends);
     }
 }

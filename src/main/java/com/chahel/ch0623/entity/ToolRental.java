@@ -6,10 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.SQLOutput;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -33,14 +36,48 @@ public class ToolRental {
         return ( ((double) rentalDays * price) * (1.0 - discount));
     }
 
-    public static int countFixedHolidays(LocalDate toolCheckoutDate, int toolCheckoutDuration) {
+    public static ArrayList<Integer> countNonWeekdays(LocalDate toolCheckoutDate, int toolCheckoutDuration) {
+        int countWeekends = 0;
+        int countHolidays = 0;
+        ArrayList<Integer> result = new ArrayList();
+
+        Month checkoutMonth = toolCheckoutDate.getMonth();
+        int checkoutDay = toolCheckoutDate.getDayOfMonth();
+        int returnDay = checkoutDay + toolCheckoutDuration;
+
+        countHolidays += countFixedHolidays(checkoutMonth, checkoutDay, returnDay);
+        int holidayDate = findFloatingHolidayDate(toolCheckoutDate);
+        countHolidays += countFloatingHolidays(checkoutMonth, checkoutDay, returnDay, holidayDate);
+        countWeekends += countWeekends(toolCheckoutDate.getDayOfWeek(), checkoutDay, returnDay);
+
+        result.add(countWeekends);
+        result.add(countHolidays);
+        return result;
+    }
+
+    public static int countWeekends(DayOfWeek checkoutDayOfWeek, int checkoutDay, int returnDay) {
         int counter = 0;
-        Month targetMonth = toolCheckoutDate.getMonth();
-        int targetDay = toolCheckoutDate.getDayOfMonth();
-        int toolFinalDay = targetDay + toolCheckoutDuration;
+        int dayOfWeekInt = checkoutDayOfWeek.getValue();
+
+        for (int i = checkoutDay; i < returnDay; i++) {
+            if ((checkoutDayOfWeek == DayOfWeek.SATURDAY) || (checkoutDayOfWeek == DayOfWeek.SUNDAY)) {
+                counter++;
+            }
+            dayOfWeekInt++;
+            if (dayOfWeekInt > 7) {
+                dayOfWeekInt %= 7;
+            }
+            checkoutDayOfWeek = checkoutDayOfWeek.of(dayOfWeekInt);
+        }
+
+        return counter;
+    }
+
+    public static int countFixedHolidays(Month checkoutMonth, int checkoutDay, int returnDay) {
+        int counter = 0;
         for (EnumsForTools.ToolFixedHoliday holiday : EnumsForTools.ToolFixedHoliday.values()) {
-            if (holiday.getMonth() == targetMonth) {
-                if ((holiday.getDay() >= targetDay) && (holiday.getDay() <= toolFinalDay)){
+            if (holiday.getMonth() == checkoutMonth) {
+                if ((holiday.getDay() >= checkoutDay) && (holiday.getDay() <= returnDay)){
                     counter++;
                 }
             }
@@ -48,18 +85,17 @@ public class ToolRental {
         return counter;
     }
 
-    public static int countFloatingHolidays(LocalDate toolCheckoutDate, int toolCheckoutDuration) {
+    public static int countFloatingHolidays(Month checkoutMonth, int checkoutDay, int returnDay, int holidayDate) {
         int counter = 0;
-        Month targetMonth = toolCheckoutDate.getMonth();
-        int targetDay = toolCheckoutDate.getDayOfMonth();
-        int toolFinalDay = targetDay + toolCheckoutDuration;
         for (EnumsForTools.ToolFloatingHoliday holiday : EnumsForTools.ToolFloatingHoliday.values()) {
-            if (holiday.getMonth() == targetMonth) {
-                int holidayDate = findFloatingHolidayDate(toolCheckoutDate);
+            if (holiday.getMonth() == checkoutMonth) {
+                System.out.println("Holiday month is " + holiday.getMonth());
+                System.out.println("Holiday date is " + holidayDate);
+                System.out.println("Holiday pattern is " + holiday.getDatePattern());
                 if (holiday.getDatePattern() > 1) {
                     holidayDate = holidayDate + (7 * (holiday.getDatePattern() - 1));
                 }
-                if ((holidayDate >= targetDay) && (holidayDate <= toolFinalDay)){
+                if ((holidayDate >= checkoutDay) && (holidayDate <= returnDay)){
                     counter++;
                 }
             }
