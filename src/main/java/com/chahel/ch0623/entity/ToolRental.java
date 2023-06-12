@@ -1,5 +1,6 @@
 package com.chahel.ch0623.entity;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -13,47 +14,47 @@ import java.time.format.DateTimeFormatter;
 
 import com.chahel.ch0623.entity.EnumsForTools.*;
 
+import javax.tools.Tool;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
 public class ToolRental {
 
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.UUID)
+    @GeneratedValue
     private Long id;
     private String toolCode;
     private String brandCode;
     private LocalDate checkoutDate;
     private int rentalDays;
-    private double discount;
+    private int discount;
     private double finalCharge;
 
-    public String processRentalAgreement() {
-        double decimalDiscount = (double) discount / 100.0;
-        if (!isValidDiscountValue(decimalDiscount)) {
-            return "ERROR - Discount amount outside acceptable range (0 - 100%)";
+    public String processRentalAgreement() throws ToolRentalException {
+        if (!isValidToolRentalObject()) {
+            throw new ToolRentalException("Rental Agreement Processing failed");
         }
-        ToolType toolType = ToolType.convertFromTypeCode(toolCode);
+        double decimalDiscount = (double) discount / 100.0;
 
-        LocalDate returnDate = LocalDate.of(checkoutDate.getYear(), checkoutDate.getMonth(),
-                checkoutDate.getDayOfMonth());
-        returnDate = returnDate.plusDays(rentalDays);
 
-        int countHolidays = calculateHolidays(returnDate);
+        int countHolidays = calculateHolidays();
         int countWeekends = calculateWeekends(checkoutDate.getDayOfWeek());
         int countWeekdays = rentalDays - (countHolidays + countWeekends);
         int chargeableDays = determineChargeableDays(countWeekdays, countWeekends, countHolidays);
-
         finalCharge = calculateFinalCharge(chargeableDays, decimalDiscount);
 
-        String invoiceString = generateInvoiceString(returnDate, chargeableDays, finalCharge);
+        String invoiceString = generateInvoiceString(chargeableDays);
 
         return invoiceString;
     }
 
-    public String generateInvoiceString(LocalDate returnDate, int chargeDays, double finalCharge) {
+    public String generateInvoiceString(int chargeDays) {
         ToolType toolType = ToolType.convertFromTypeCode(toolCode);
         double preDiscountCharge = chargeDays * toolType.getTypePrice();
+        LocalDate returnDate = LocalDate.of(checkoutDate.getYear(), checkoutDate.getMonth(),
+                checkoutDate.getDayOfMonth()).plusDays(rentalDays);
 
         return "Tool Code: " + toolCode + brandCode + "\n"
                 + "Tool Type: " + toolType.getTypeString() + "\n"
@@ -69,6 +70,25 @@ public class ToolRental {
                 + "Final Charge: " + formatCurrency(finalCharge);
     }
 
+    public boolean isValidToolRentalObject() {
+        if (!isValidDiscountValue()) {
+            throw new ToolRentalException("Discount value outside acceptable range (0 - 100%)");
+        }
+        if (!isValidRentalDaysValue()) {
+            throw new ToolRentalException("RentalDays value outside acceptable range (1+)");
+        }
+        if (!isValidToolCodeValue()) {
+            throw new ToolRentalException("ToolCode value not recognized");
+        }
+        if (!isValidBrandCodeValue()) {
+            throw new ToolRentalException("BrandCode value not recognized");
+        }
+        if (!isValidCheckoutDate()) {
+            throw new ToolRentalException("CheckoutDate value is before current date");
+        }
+        return true;
+    }
+
     public String formatDate(LocalDate date) {
         return date.format(DateTimeFormatter.ofPattern("MM/dd/YY"));
     }
@@ -77,8 +97,34 @@ public class ToolRental {
         return NumberFormat.getCurrencyInstance().format(value);
     }
 
-    public boolean isValidDiscountValue(double decimalDiscount) {
-        return ((0.0 <= decimalDiscount) && (1.0 >= decimalDiscount));
+    public boolean isValidDiscountValue() {
+        return ((0 <= discount) && (100 >= discount));
+    }
+
+    public boolean isValidRentalDaysValue() {
+        return (rentalDays >= 1);
+    }
+
+    public boolean isValidToolCodeValue() {
+        for (ToolType type : ToolType.values()) {
+            if (toolCode.equals(type.getTypeCode())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isValidBrandCodeValue() {
+        for (ToolBrand brand : ToolBrand.values()) {
+            if (brandCode.equals(brand.getBrandCode())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isValidCheckoutDate() {
+        return ((checkoutDate.isAfter(LocalDate.now())) || (checkoutDate.isEqual(LocalDate.now())));
     }
 
     public double calculateFinalCharge(int chargeableDays, double decimalDiscount) {
@@ -124,7 +170,9 @@ public class ToolRental {
         return counter;
     }
 
-    public int calculateHolidays(LocalDate returnDate) {
+    public int calculateHolidays() {
+        LocalDate returnDate = LocalDate.of(checkoutDate.getYear(), checkoutDate.getMonth(),
+                checkoutDate.getDayOfMonth()).plusDays(rentalDays);
         int counter = 0;
 
         // As long as the Holiday occurs within the range of Checkout and Return, it applies to this rental
@@ -135,7 +183,7 @@ public class ToolRental {
                     || (holiday.getDate().isEqual(returnDate))
             )
             {
-                    counter++;
+                counter++;
             }
         }
 
