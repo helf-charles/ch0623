@@ -64,8 +64,8 @@ public class ToolRental {
                 + "Daily Rental Charge: " + formatCurrency(toolType.getTypePrice()) + "\n"
                 + "Charge Days: " + chargeDays + "\n"
                 + "Pre-Discount Charge: " + formatCurrency(preDiscountCharge) + "\n"
-                + "Discount Percent: " + (int) discount + "%"
-                + "Discount Amount: " + formatCurrency(preDiscountCharge - finalCharge)
+                + "Discount Percent: " + (int) discount + "%\n"
+                + "Discount Amount: " + formatCurrency(preDiscountCharge - finalCharge) + "\n"
                 + "Final Charge: " + formatCurrency(finalCharge);
     }
 

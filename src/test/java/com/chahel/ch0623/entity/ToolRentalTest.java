@@ -28,6 +28,10 @@ public class ToolRentalTest {
     void scratch() {
         System.out.println(DayOfWeek.MONDAY.getValue());
         System.out.println(dateSecond.format(DateTimeFormatter.ofPattern("MM/dd/YY")));
+
+        ToolRental rental01 = new ToolRental(Integer.toUnsignedLong(1), ToolType.LADDER.getTypeCode(),
+                ToolBrand.RIDGID.getBrandCode(), dateFirst, 5, 0.0, 9.95);
+        System.out.println((rental01.processRentalAgreement()));
     }
 
     @Test
