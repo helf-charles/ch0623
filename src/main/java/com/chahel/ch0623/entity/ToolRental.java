@@ -21,7 +21,6 @@ public class ToolRental {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.UUID)
     private Long id;
-
     private String toolCode;
     private String brandCode;
     private LocalDate rentalDate;
@@ -96,9 +95,5 @@ public class ToolRental {
                 }
             }
         return counter;
-    }
-
-    public static int findFloatingHolidayDate(LocalDate targetDate, DayOfWeek dayOfWeek) {
-        return targetDate.with(TemporalAdjusters.firstInMonth(dayOfWeek)).getDayOfMonth();
     }
 }

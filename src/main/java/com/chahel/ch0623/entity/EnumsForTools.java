@@ -13,18 +13,20 @@ import java.util.List;
 public class EnumsForTools {
 
     /**
-     * This Enum contains all valid Tools, their Prices, and their Tool Codes, as well as an Error Code
+     * This Enum contains all valid Tools, their Prices, their valid Brand Code Pairings, and their Tool Codes,
+     * as well as an Error Code
      */
     @Getter
     @AllArgsConstructor
     public enum ToolType {
-        CHAINSAW("Chainsaw", "CHN", 1.49),
-        LADDER("Ladder", "LAD", 1.99),
-        JACKHAMMER("Jackhammer", "JAK", 2.99),
-        ERROR("Error", "ERR", 0.00);
+        CHAINSAW("Chainsaw", "CHN", "S", 1.49),
+        LADDER("Ladder", "LAD", "W", 1.99),
+        JACKHAMMER("Jackhammer", "JAK", "DR", 2.99),
+        ERROR("Error", "ERR", "!", 0.00);
 
         private String typeString;
         private String typeCode;
+        private String typeValidBrandPairings;
         private double typePrice;
 
         public static ToolType convertFromTypeCode(String typeCode) {
@@ -40,18 +42,13 @@ public class EnumsForTools {
             }
         }
 
-        public List<ToolChargeDay> findChargeableDays() {
-            ArrayList<ToolChargeDay> result = new ArrayList();
-            result.add(ToolChargeDay.WEEKDAY);
-            switch (this) {
-                case CHAINSAW:
-                    result.add(ToolChargeDay.HOLIDAY);
-                    break;
-                case LADDER:
-                    result.add(ToolChargeDay.WEEKEND);
-                    break;
+        public static boolean isValidBrandCode(ToolType toolType, char toolCode) {
+            for (char c : toolType.typeValidBrandPairings.toCharArray()) {
+                if (c == toolCode) {
+                    return true;
+                }
             }
-            return result;
+            return false;
         }
 
         public String toString() {
@@ -92,19 +89,6 @@ public class EnumsForTools {
         public String toString() {
             return brandString + " " + brandCode;
         }
-    }
-
-    /**
-     * This Enum contains all valid pairings of Tools and Brands
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum ToolBrandPairings {
-        CHAINSAW("S"),
-        LADDER("W"),
-        JACKHAMMER("DR");
-
-        private String brandListString;
     }
 
     /**
