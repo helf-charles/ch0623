@@ -115,7 +115,7 @@ public class EnumsForTools {
     public enum ToolChargeDay {
         WEEKDAY("Weekday", new ArrayList(List.of(ToolType.LADDER, ToolType.CHAINSAW, ToolType.JACKHAMMER))),
         WEEKEND("Weekend", new ArrayList(List.of(ToolType.LADDER))),
-        HOLIDAY("Holiday", new ArrayList(List.of(ToolType.JACKHAMMER)));
+        HOLIDAY("Holiday", new ArrayList(List.of(ToolType.CHAINSAW)));
 
         private String toolChargeDay;
         private ArrayList<ToolType> chargeableTools;

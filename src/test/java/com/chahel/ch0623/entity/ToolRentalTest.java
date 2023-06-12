@@ -71,6 +71,34 @@ public class ToolRentalTest {
 
     @Test
     void checkChargeableDaysCorrectlyCalculated() {
+        int result01 = ToolRental.calculateChargeableDays(ToolType.LADDER, 5, 2, 1);
+        int result02 = ToolRental.calculateChargeableDays(ToolType.LADDER, 0, 2, 1);
+        int result03 = ToolRental.calculateChargeableDays(ToolType.LADDER, 5, 0, 1);
+        int result04 = ToolRental.calculateChargeableDays(ToolType.LADDER, 5, 2, 0);
 
+        int result05 = ToolRental.calculateChargeableDays(ToolType.CHAINSAW, 5, 2, 1);
+        int result06 = ToolRental.calculateChargeableDays(ToolType.CHAINSAW, 0, 2, 1);
+        int result07 = ToolRental.calculateChargeableDays(ToolType.CHAINSAW, 5, 0, 1);
+        int result08 = ToolRental.calculateChargeableDays(ToolType.CHAINSAW, 5, 2, 0);
+
+        int result09 = ToolRental.calculateChargeableDays(ToolType.JACKHAMMER, 5, 2, 1);
+        int result10 = ToolRental.calculateChargeableDays(ToolType.JACKHAMMER, 0, 2, 1);
+        int result11 = ToolRental.calculateChargeableDays(ToolType.JACKHAMMER, 5, 0, 1);
+        int result12 = ToolRental.calculateChargeableDays(ToolType.JACKHAMMER, 5, 2, 0);
+
+        assertEquals(7, result01);
+        assertEquals(2, result02);
+        assertEquals(5, result03);
+        assertEquals(7, result04);
+
+        assertEquals(6, result05);
+        assertEquals(1, result06);
+        assertEquals(6, result07);
+        assertEquals(5, result08);
+
+        assertEquals(5, result09);
+        assertEquals(0, result10);
+        assertEquals(5, result11);
+        assertEquals(5, result12);
     }
 }
