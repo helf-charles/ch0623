@@ -56,14 +56,14 @@ public class ToolRentalTest {
     }
 
     @Test
-    void checkFixedHolidaysCorrectlyIdentified() {
+    void checkFixedHolidaysCorrectlyCalculated() {
         int holidays = ToolRental.countHolidays(dateSecond,
                 dateSecond.plusDays(rentalJulyHoliday.getRentalDays()));
         assertEquals(1, holidays);
     }
 
     @Test
-    void checkWeekendsCorrectlyIdentified() {
+    void checkWeekendsCorrectlyCalculated() {
         int weekends = ToolRental.countWeekends(dateFirst.getDayOfWeek(), dateFirst.getDayOfMonth(),
                 dateFirst.getDayOfMonth() + 11);
         assertEquals(4, weekends);

@@ -97,4 +97,26 @@ public class EnumsForToolsTest {
         assertEquals(true, allSucceeded);
         assertEquals(1, errorCount);
     }
+
+    @Test
+    void checkAllToolTypesHaveChargeDays() {
+        boolean allSucceeded = true;
+
+        for (ToolType toolType : ToolType.values()) {
+            if (toolType == ToolType.ERROR) {
+                continue;
+            }
+            for (ToolChargeDay chargeDay : ToolChargeDay.values()) {
+                if (chargeDay.getChargeableTools().contains(toolType)) {
+                    break;
+                }
+                allSucceeded = false;
+            }
+            if (!allSucceeded) {
+                break;
+            }
+        }
+
+        assertEquals(true, allSucceeded);
+    }
 }
