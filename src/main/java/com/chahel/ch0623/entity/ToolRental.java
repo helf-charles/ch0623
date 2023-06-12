@@ -6,13 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.SQLOutput;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.List;
+import com.chahel.ch0623.entity.EnumsForTools.*;
+
+import javax.tools.Tool;
 
 @Data
 @AllArgsConstructor
@@ -30,28 +31,39 @@ public class ToolRental {
     private double discount;
     private double finalCharge;
 
+    public static ArrayList<Integer> countNonWeekdays(LocalDate toolCheckoutDate, int toolCheckoutDuration) {
+        int checkoutDay = toolCheckoutDate.getDayOfMonth();
+        int returnDay = checkoutDay + toolCheckoutDuration;
+        LocalDate toolReturnDate = LocalDate.of(toolCheckoutDate.getYear(),
+                toolCheckoutDate.getMonth(), toolCheckoutDate.getDayOfMonth());
+        toolReturnDate.plusDays(toolCheckoutDuration);
+
+        int countHolidays = countHolidays(toolCheckoutDate, toolReturnDate);
+        int countWeekends = countWeekends(toolCheckoutDate.getDayOfWeek(), checkoutDay, returnDay);
+
+        ArrayList<Integer> result = new ArrayList();
+        result.add(countWeekends);
+        result.add(countHolidays);
+        return result;
+    }
+
     public static double calculateFinalCharge(String toolCode, int rentalDays, double discount) {
         EnumsForTools.ToolType toolType = EnumsForTools.ToolType.convertFromTypeCode(toolCode);
         double price = toolType.getTypePrice();
         return ( ((double) rentalDays * price) * (1.0 - discount));
     }
 
-    public static ArrayList<Integer> countNonWeekdays(LocalDate toolCheckoutDate, int toolCheckoutDuration) {
-        int countWeekends = 0;
-        int countHolidays = 0;
-        ArrayList<Integer> result = new ArrayList();
-
-        Month checkoutMonth = toolCheckoutDate.getMonth();
-        int checkoutDay = toolCheckoutDate.getDayOfMonth();
-        int returnDay = checkoutDay + toolCheckoutDuration;
-
-        countHolidays += countFixedHolidays(checkoutMonth, checkoutDay, returnDay);
-        int holidayDate = findFloatingHolidayDate(toolCheckoutDate);
-        countHolidays += countFloatingHolidays(checkoutMonth, checkoutDay, returnDay, holidayDate);
-        countWeekends += countWeekends(toolCheckoutDate.getDayOfWeek(), checkoutDay, returnDay);
-
-        result.add(countWeekends);
-        result.add(countHolidays);
+    public static int calculateChargeableDays(ToolType toolType, int weekdays, int weekends, int holidays) {
+        int result = 0;
+        if (ToolChargeDay.WEEKDAY.getChargeableTools().contains(toolType)) {
+            result += weekdays;
+        }
+        if (ToolChargeDay.WEEKEND.getChargeableTools().contains(toolType)) {
+            result += weekends;
+        }
+        if (ToolChargeDay.HOLIDAY.getChargeableTools().contains(toolType)) {
+            result += holidays;
+        }
         return result;
     }
 
@@ -73,37 +85,22 @@ public class ToolRental {
         return counter;
     }
 
-    public static int countFixedHolidays(Month checkoutMonth, int checkoutDay, int returnDay) {
+    public static int countHolidays(LocalDate checkoutDate, LocalDate returnDate) {
         int counter = 0;
+
         for (EnumsForTools.ToolFixedHoliday holiday : EnumsForTools.ToolFixedHoliday.values()) {
-            if (holiday.getMonth() == checkoutMonth) {
-                if ((holiday.getDay() >= checkoutDay) && (holiday.getDay() <= returnDay)){
+            if (
+                    (holiday.getDate().isAfter(checkoutDate) && (holiday.getDate().isBefore(returnDate)))
+                    || (holiday.getDate().isEqual(checkoutDate))
+                    || (holiday.getDate().isEqual(returnDate))
+            )  {
                     counter++;
                 }
             }
-        }
         return counter;
     }
 
-    public static int countFloatingHolidays(Month checkoutMonth, int checkoutDay, int returnDay, int holidayDate) {
-        int counter = 0;
-        for (EnumsForTools.ToolFloatingHoliday holiday : EnumsForTools.ToolFloatingHoliday.values()) {
-            if (holiday.getMonth() == checkoutMonth) {
-                System.out.println("Holiday month is " + holiday.getMonth());
-                System.out.println("Holiday date is " + holidayDate);
-                System.out.println("Holiday pattern is " + holiday.getDatePattern());
-                if (holiday.getDatePattern() > 1) {
-                    holidayDate = holidayDate + (7 * (holiday.getDatePattern() - 1));
-                }
-                if ((holidayDate >= checkoutDay) && (holidayDate <= returnDay)){
-                    counter++;
-                }
-            }
-        }
-        return counter;
-    }
-
-    public static int findFloatingHolidayDate(LocalDate targetDate) {
-        return targetDate.with(TemporalAdjusters.firstInMonth(DayOfWeek.MONDAY)).getDayOfMonth();
+    public static int findFloatingHolidayDate(LocalDate targetDate, DayOfWeek dayOfWeek) {
+        return targetDate.with(TemporalAdjusters.firstInMonth(dayOfWeek)).getDayOfMonth();
     }
 }

@@ -7,6 +7,7 @@ import lombok.Getter;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,23 +102,44 @@ public class EnumsForTools {
     @Getter
     @AllArgsConstructor
     public enum ToolChargeDay {
-        WEEKDAY("Weekday"), WEEKEND("Weekend"), HOLIDAY("Holiday");
+        WEEKDAY("Weekday", new ArrayList(List.of(ToolType.LADDER, ToolType.CHAINSAW, ToolType.JACKHAMMER))),
+        WEEKEND("Weekend", new ArrayList(List.of(ToolType.LADDER))),
+        HOLIDAY("Holiday", new ArrayList(List.of(ToolType.JACKHAMMER)));
 
         private String toolChargeDay;
+        private ArrayList<ToolType> chargeableTools;
 
         public String toString() {
-            return toolChargeDay;
+            return toolChargeDay + " " + chargeableTools;
         }
     }
 
     @Getter
     @AllArgsConstructor
     public enum ToolFixedHoliday {
-        INDEPENDENCE_DAY("Independence Day", Month.JULY, 4);
+        INDEPENDENCE_DAY("Independence Day", calculateCurrentFixedHoliday( 7, 4)),
+        LABOR_DAY("Labor Day", convertFloatingHolidayToFixed(ToolFloatingHoliday.LABOR_DAY));
 
         private String holidayString;
-        private Month month;
-        private int day;
+        private LocalDate date;
+
+        private static LocalDate calculateCurrentFixedHoliday(int month, int day) {
+            return LocalDate.of(LocalDate.now().getYear(), month, day);
+        }
+        private static LocalDate convertFloatingHolidayToFixed(ToolFloatingHoliday floatingHoliday) {
+            LocalDate result = LocalDate.of(LocalDate.now().getYear(),
+                    floatingHoliday.getMonth(), 1);
+            result = result.with(TemporalAdjusters.firstInMonth(floatingHoliday.getDayOfWeek()));
+            if (floatingHoliday.getDatePattern() > 1) {
+                int adjustmentDays = 7 * (floatingHoliday.getDatePattern() - 1);
+                result.plusDays(adjustmentDays);
+            }
+            return result;
+        }
+
+        public String toString() {
+            return "| " + holidayString + " | " + date + " |";
+        }
     }
 
     @Getter
