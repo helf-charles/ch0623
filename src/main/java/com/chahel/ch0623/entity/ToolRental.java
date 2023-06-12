@@ -29,7 +29,7 @@ public class ToolRental {
     private double discount;
     private double finalCharge;
 
-    public static ArrayList<Integer> countNonWeekdays(LocalDate toolCheckoutDate, int toolCheckoutDuration) {
+    public double calculateInvoice(LocalDate toolCheckoutDate, int toolCheckoutDuration) {
         int checkoutDay = toolCheckoutDate.getDayOfMonth();
         int returnDay = checkoutDay + toolCheckoutDuration;
         LocalDate toolReturnDate = LocalDate.of(toolCheckoutDate.getYear(),
@@ -38,17 +38,17 @@ public class ToolRental {
 
         int countHolidays = countHolidays(toolCheckoutDate, toolReturnDate);
         int countWeekends = countWeekends(toolCheckoutDate.getDayOfWeek(), checkoutDay, returnDay);
+        int countWeekdays = toolCheckoutDuration - (countHolidays + countWeekends);
+        int chargeableDays = calculateChargeableDays(ToolType.convertFromTypeCode(toolCode),
+                countWeekdays, countWeekends, countHolidays);
 
-        ArrayList<Integer> result = new ArrayList();
-        result.add(countWeekends);
-        result.add(countHolidays);
-        return result;
+        return chargeableDays;
     }
 
-    public static double calculateFinalCharge(String toolCode, int rentalDays, double discount) {
+    public static double calculateFinalCharge(String toolCode, int chargeableDays, double discount) {
         EnumsForTools.ToolType toolType = EnumsForTools.ToolType.convertFromTypeCode(toolCode);
         double price = toolType.getTypePrice();
-        return ( ((double) rentalDays * price) * (1.0 - discount));
+        return ( ((double) chargeableDays * price) * (1.0 - discount));
     }
 
     public static int calculateChargeableDays(ToolType toolType, int weekdays, int weekends, int holidays) {
