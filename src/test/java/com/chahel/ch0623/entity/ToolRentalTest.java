@@ -3,7 +3,10 @@ package com.chahel.ch0623.entity;
 import org.junit.jupiter.api.Test;
 
 import com.chahel.ch0623.entity.EnumsForTools.*;
+
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -21,70 +24,73 @@ public class ToolRentalTest {
     // 2023 AUG 27 SUN
     private LocalDate dateFourth = LocalDate.of(2023, 8, 27);
 
-    // JAN 13 2023 SUN - JAN 14 2023 MON
-    private ToolRental rentalOneWeekday = new ToolRental(Integer.toUnsignedLong(0),
-            ToolType.CHAINSAW.getTypeCode(), ToolBrand.STIHL.getBrandCode(), dateFirst,
-            1, 0.0, 1.49);
-
-    // JAN 13 2023 SUN - JAN 18 2023 FRI
-    private ToolRental rentalManyWeekdays = new ToolRental(Integer.toUnsignedLong(1),
-            ToolType.LADDER.getTypeCode(), ToolBrand.RIDGID.getBrandCode(), dateFirst,
-            5, 0.0, 9.95);
-
-    // JUL 03 2023 MON - JUL 07 2023 FRI
-    private ToolRental rentalJulyHoliday = new ToolRental(Integer.toUnsignedLong(2),
-            ToolType.JACKHAMMER.getTypeCode(), ToolBrand.DEWALT.getBrandCode(), dateSecond,
-            4, 0.0, 14.95);
-
-    // SEP 01 2023 FRI - SEP 05 2023 TUE
-    private ToolRental rentalSeptemberHoliday = new ToolRental(Integer.toUnsignedLong(3),
-            ToolType.JACKHAMMER.getTypeCode(), ToolBrand.DEWALT.getBrandCode(), dateThird,
-            5, 0.0, 11.96);
-
-    private ToolRental rentalJulySeptemberHoliday = new ToolRental(Integer.toUnsignedLong(4),
-            ToolType.LADDER.getTypeCode(), ToolBrand.WERNER.getBrandCode(), dateFourth,
-            9, 0.0, 11.96);
+    @Test
+    void scratch() {
+        System.out.println(DayOfWeek.MONDAY.getValue());
+        System.out.println(dateSecond.format(DateTimeFormatter.ofPattern("MM/dd/YY")));
+    }
 
     @Test
     void checkValidRentalsReturnCorrectFinalCharge() {
-        double resultFirst = ToolRental.calculateFinalCharge(rentalOneWeekday.getToolCode(),
-                rentalOneWeekday.getRentalDays(), rentalOneWeekday.getDiscount());
-        double resultSecond = ToolRental.calculateFinalCharge(rentalManyWeekdays.getToolCode(),
-                rentalManyWeekdays.getRentalDays(), rentalManyWeekdays.getDiscount());
-        assertEquals(rentalOneWeekday.getFinalCharge(), resultFirst);
-        assertEquals(rentalManyWeekdays.getFinalCharge(), resultSecond);
+        ToolRental rental01 = new ToolRental(Integer.toUnsignedLong(1), ToolType.LADDER.getTypeCode(),
+                ToolBrand.RIDGID.getBrandCode(), dateFirst, 5, 0.0, 9.95);
+        ToolRental rental02 = new ToolRental(Integer.toUnsignedLong(1), ToolType.LADDER.getTypeCode(),
+                ToolBrand.RIDGID.getBrandCode(), dateFirst, 3, 0.0, 5.97);
+
+        double result01 = rental01.calculateFinalCharge(5, rental01.getDiscount());
+        double result02 = rental02.calculateFinalCharge(3, rental02.getDiscount());
+
+        assertEquals(rental01.getFinalCharge(), result01);
+        assertEquals(rental02.getFinalCharge(), result02);
     }
 
     @Test
     void checkFixedHolidaysCorrectlyCalculated() {
-        int holidays = ToolRental.countHolidays(dateSecond,
-                dateSecond.plusDays(rentalJulyHoliday.getRentalDays()));
-        assertEquals(1, holidays);
+        ToolRental rental01 = new ToolRental(Integer.toUnsignedLong(2), ToolType.JACKHAMMER.getTypeCode(),
+                ToolBrand.DEWALT.getBrandCode(), dateSecond, 4, 0.0, 14.95);
+        ToolRental rental02 = new ToolRental(Integer.toUnsignedLong(3), ToolType.LADDER.getTypeCode(),
+                ToolBrand.WERNER.getBrandCode(), dateThird, 9, 0.0, 99.0);
+
+        int holidays01 = rental01.calculateHolidays(dateSecond.plusDays(rental01.getRentalDays()));
+        int holidays02 = rental02.calculateHolidays(dateThird.plusDays((rental02.getRentalDays())));
+
+        assertEquals(1, holidays01);
+        assertEquals(1, holidays02);
     }
 
     @Test
     void checkWeekendsCorrectlyCalculated() {
-        int weekends = ToolRental.countWeekends(dateFirst.getDayOfWeek(), dateFirst.getDayOfMonth(),
-                dateFirst.getDayOfMonth() + 11);
+        ToolRental rental = new ToolRental(Integer.toUnsignedLong(1), ToolType.LADDER.getTypeCode(),
+                ToolBrand.RIDGID.getBrandCode(), dateFirst,  11, 0.0, 9.95);
+
+        int weekends = rental.calculateWeekends(dateFirst.getDayOfWeek());
+
         assertEquals(4, weekends);
     }
 
     @Test
     void checkChargeableDaysCorrectlyCalculated() {
-        int result01 = ToolRental.calculateChargeableDays(ToolType.LADDER, 5, 2, 1);
-        int result02 = ToolRental.calculateChargeableDays(ToolType.LADDER, 0, 2, 1);
-        int result03 = ToolRental.calculateChargeableDays(ToolType.LADDER, 5, 0, 1);
-        int result04 = ToolRental.calculateChargeableDays(ToolType.LADDER, 5, 2, 0);
+        ToolRental rental = new ToolRental(Integer.toUnsignedLong(10), ToolType.LADDER.getTypeCode(),
+                ToolBrand.DEWALT.getBrandCode(), dateSecond, 8, 0.0, 17.94);
 
-        int result05 = ToolRental.calculateChargeableDays(ToolType.CHAINSAW, 5, 2, 1);
-        int result06 = ToolRental.calculateChargeableDays(ToolType.CHAINSAW, 0, 2, 1);
-        int result07 = ToolRental.calculateChargeableDays(ToolType.CHAINSAW, 5, 0, 1);
-        int result08 = ToolRental.calculateChargeableDays(ToolType.CHAINSAW, 5, 2, 0);
+        int result01 = rental.determineChargeableDays(5, 2, 1);
+        int result02 = rental.determineChargeableDays(0, 2, 1);
+        int result03 = rental.determineChargeableDays(5, 0, 1);
+        int result04 = rental.determineChargeableDays(5, 2, 0);
 
-        int result09 = ToolRental.calculateChargeableDays(ToolType.JACKHAMMER, 5, 2, 1);
-        int result10 = ToolRental.calculateChargeableDays(ToolType.JACKHAMMER, 0, 2, 1);
-        int result11 = ToolRental.calculateChargeableDays(ToolType.JACKHAMMER, 5, 0, 1);
-        int result12 = ToolRental.calculateChargeableDays(ToolType.JACKHAMMER, 5, 2, 0);
+        rental.setToolCode(ToolType.CHAINSAW.getTypeCode());
+
+        int result05 = rental.determineChargeableDays(5, 2, 1);
+        int result06 = rental.determineChargeableDays(0, 2, 1);
+        int result07 = rental.determineChargeableDays(5, 0, 1);
+        int result08 = rental.determineChargeableDays(5, 2, 0);
+
+        rental.setToolCode(ToolType.JACKHAMMER.getTypeCode());
+
+        int result09 = rental.determineChargeableDays(5, 2, 1);
+        int result10 = rental.determineChargeableDays(0, 2, 1);
+        int result11 = rental.determineChargeableDays(5, 0, 1);
+        int result12 = rental.determineChargeableDays(5, 2, 0);
 
         assertEquals(7, result01);
         assertEquals(2, result02);
