@@ -46,16 +46,6 @@ public class ToolRentalTest {
             9, 0.0, 11.96);
 
     @Test
-    void scratch() {
-        System.out.println("Hello world!");
-        for (ToolFixedHoliday holiday : ToolFixedHoliday.values())
-        {
-            System.out.println(holiday);
-        }
-
-    }
-
-    @Test
     void checkValidRentalsReturnCorrectFinalCharge() {
         double resultFirst = ToolRental.calculateFinalCharge(rentalOneWeekday.getToolCode(),
                 rentalOneWeekday.getRentalDays(), rentalOneWeekday.getDiscount());

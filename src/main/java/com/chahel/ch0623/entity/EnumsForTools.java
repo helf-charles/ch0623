@@ -1,7 +1,6 @@
 package com.chahel.ch0623.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 
 import java.time.DayOfWeek;
@@ -13,6 +12,9 @@ import java.util.List;
 
 public class EnumsForTools {
 
+    /**
+     * This Enum contains all valid Tools, their Prices, and their Tool Codes, as well as an Error Code
+     */
     @Getter
     @AllArgsConstructor
     public enum ToolType {
@@ -57,6 +59,9 @@ public class EnumsForTools {
         }
     }
 
+    /**
+     * This Enum contains all valid Brands and their Brand Codes, as well as an Error Code
+     */
     @Getter
     @AllArgsConstructor
     public enum ToolBrand {
@@ -89,6 +94,9 @@ public class EnumsForTools {
         }
     }
 
+    /**
+     * This Enum contains all valid pairings of Tools and Brands
+     */
     @Getter
     @AllArgsConstructor
     public enum ToolBrandPairings {
@@ -99,6 +107,9 @@ public class EnumsForTools {
         private String brandListString;
     }
 
+    /**
+     * This Enum contains all associations between the types of Tools and what days they can be charged a rental fee
+     */
     @Getter
     @AllArgsConstructor
     public enum ToolChargeDay {
@@ -114,6 +125,9 @@ public class EnumsForTools {
         }
     }
 
+    /**
+     * This Enum holds all Fixed value Holidays in a way that can be very easily compared to other dates
+     */
     @Getter
     @AllArgsConstructor
     public enum ToolFixedHoliday {
@@ -123,16 +137,24 @@ public class EnumsForTools {
         private String holidayString;
         private LocalDate date;
 
-        private static LocalDate calculateCurrentFixedHoliday(int month, int day) {
+        public static LocalDate calculateCurrentFixedHoliday(int month, int day) {
+            // We want THIS year's Holiday value
             return LocalDate.of(LocalDate.now().getYear(), month, day);
         }
-        private static LocalDate convertFloatingHolidayToFixed(ToolFloatingHoliday floatingHoliday) {
+
+        public static LocalDate convertFloatingHolidayToFixed(ToolFloatingHoliday floatingHoliday) {
+
+            // First, set the result Year to this year and result Month to the Holiday's Month
             LocalDate result = LocalDate.of(LocalDate.now().getYear(),
                     floatingHoliday.getMonth(), 1);
+
+            // Adjust the result DayOfMonth to point to the first DayOfWeek that this Holiday falls on
             result = result.with(TemporalAdjusters.firstInMonth(floatingHoliday.getDayOfWeek()));
+
+            // If the Holiday falls on something other than the First DayOfWeek in the month, adjust accordingly
             if (floatingHoliday.getDatePattern() > 1) {
                 int adjustmentDays = 7 * (floatingHoliday.getDatePattern() - 1);
-                result.plusDays(adjustmentDays);
+                result = result.plusDays(adjustmentDays);
             }
             return result;
         }
@@ -142,6 +164,9 @@ public class EnumsForTools {
         }
     }
 
+    /**
+     * This Enum holds all Floating Holidays that need to be converted to fixed (i.e. "The 3rd Thursday of the month")
+     */
     @Getter
     @AllArgsConstructor
     public enum ToolFloatingHoliday {
