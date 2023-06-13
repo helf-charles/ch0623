@@ -30,9 +30,12 @@ public class ToolRental {
     private double finalCharge;
 
     public String processRentalAgreement() throws ToolRentalException {
-        if (!isValidToolRentalObject()) {
-            throw new ToolRentalException("Rental Agreement Processing failed");
+        try {
+            isValidToolRentalObject();
+        } catch (ToolRentalException e) {
+            return e.getMessage();
         }
+
         double decimalDiscount = (double) discount / 100.0;
 
 
@@ -53,7 +56,8 @@ public class ToolRental {
         LocalDate returnDate = LocalDate.of(checkoutDate.getYear(), checkoutDate.getMonth(),
                 checkoutDate.getDayOfMonth()).plusDays(rentalDays);
 
-        return "Tool Code: " + toolBrandCode + "\n"
+        return "\n"
+                + "Tool Code: " + toolBrandCode + "\n"
                 + "Tool Type: " + toolType.getTypeString() + "\n"
                 + "Tool Brand: " + ToolBrand.convertFromBrandCode(toolBrandCode.substring(3)).getBrandString() + "\n"
                 + "RentalDays: " + rentalDays + "\n"
@@ -64,27 +68,29 @@ public class ToolRental {
                 + "Pre-Discount Charge: " + formatCurrency(preDiscountCharge) + "\n"
                 + "Discount Percent: " + discount + "%\n"
                 + "Discount Amount: " + formatCurrency(preDiscountCharge - finalCharge) + "\n"
-                + "Final Charge: " + formatCurrency(finalCharge);
+                + "Final Charge: " + formatCurrency(finalCharge) + "\n"
+                + "--------------------\n";
     }
 
     public boolean isValidToolRentalObject() {
         if (!isValidDiscountValue()) {
-            throw new ToolRentalException("Discount value outside acceptable range (0 - 100%)");
+            throw new ToolRentalException("ERROR - Discount value " + discount + " outside acceptable range (0 - 100%)");
         }
         if (!isValidRentalDaysValue()) {
-            throw new ToolRentalException("RentalDays value outside acceptable range (1+)");
+            throw new ToolRentalException("ERROR - RentalDays value " + rentalDays + " outside acceptable range (1+)");
         }
         if (!isValidToolCodeValue()) {
-            throw new ToolRentalException("ToolCode value not recognized");
+            throw new ToolRentalException("ERROR - ToolCode value " + toolBrandCode.substring(0, 3) + " not recognized");
         }
         if (!isValidBrandCodeValue()) {
-            throw new ToolRentalException("BrandCode value not recognized");
+            throw new ToolRentalException("ERROR - BrandCode value " + toolBrandCode.substring(3) + " not recognized");
         }
         if(!isValidToolBrandPairing()) {
-            throw new ToolRentalException("ToolCode and BrandCode pair invalid");
+            throw new ToolRentalException("ERROR - ToolCode and BrandCode pair " + toolBrandCode + " invalid");
         }
         if (!isValidCheckoutDate()) {
-            throw new ToolRentalException("CheckoutDate value is before current date");
+            //throw new ToolRentalException("ERROR - CheckoutDate value " + checkoutDate.toString() + " is before current date");
+            return true;
         }
         return true;
     }
@@ -178,15 +184,20 @@ public class ToolRental {
         LocalDate returnDate = LocalDate.of(checkoutDate.getYear(), checkoutDate.getMonth(),
                 checkoutDate.getDayOfMonth()).plusDays(rentalDays);
         int counter = 0;
+        int yearDifference = checkoutDate.getYear() - ToolFixedHoliday.INDEPENDENCE_DAY.getDate().getYear();
+        LocalDate holidayDate;
 
         // As long as the Holiday occurs within the range of Checkout and Return, it applies to this rental
-        for (EnumsForTools.ToolFixedHoliday holiday : EnumsForTools.ToolFixedHoliday.values()) {
+        for (ToolFixedHoliday holiday : ToolFixedHoliday.values()) {
+            holidayDate = holiday.getDate().plusYears(yearDifference);
+            System.out.println("\nTarget holiday date is " + holidayDate + "\n");
             if (
-                    (holiday.getDate().isAfter(checkoutDate) && (holiday.getDate().isBefore(returnDate)))
-                    || (holiday.getDate().isEqual(checkoutDate))
-                    || (holiday.getDate().isEqual(returnDate))
+                    (holidayDate.isAfter(checkoutDate) && (holidayDate.isBefore(returnDate)))
+                    || (holidayDate.isEqual(checkoutDate))
+                    || (holidayDate.isEqual(returnDate))
             )
             {
+                System.out.println("\nHOLIDAY FOUND!\n");
                 counter++;
             }
         }

@@ -35,10 +35,50 @@ public class ToolRentalTest {
     }
 
     @Test
+    void assessmentTestCases() {
+        LocalDate date01 = LocalDate.of(2015, 9, 3);
+        ToolRental rental01 = new ToolRental(Integer.toUnsignedLong(1), ToolType.JACKHAMMER.getTypeCode() +
+                ToolBrand.RIDGID.getBrandCode(), date01, 5, 101, 0.0);
+        LocalDate date02 = LocalDate.of(2020, 7, 2);
+        ToolRental rental02 = new ToolRental(Integer.toUnsignedLong(2), ToolType.LADDER.getTypeCode() +
+                ToolBrand.WERNER.getBrandCode(), date02, 3, 10, 0.0);
+        LocalDate date03 = LocalDate.of(2015, 7, 2);
+        ToolRental rental03 = new ToolRental(Integer.toUnsignedLong(3), ToolType.CHAINSAW.getTypeCode() +
+                ToolBrand.STIHL.getBrandCode(), date03, 5, 25, 0.0);
+        LocalDate date04 = LocalDate.of(2015, 9, 3);
+        ToolRental rental04 = new ToolRental(Integer.toUnsignedLong(4), ToolType.JACKHAMMER.getTypeCode() +
+                ToolBrand.DEWALT.getBrandCode(), date04, 6, 0, 0.0);
+        ToolRental rental05 = new ToolRental(Integer.toUnsignedLong(5), ToolType.JACKHAMMER.getTypeCode() +
+                ToolBrand.RIDGID.getBrandCode(), date03, 9, 0, 0.0);
+        ToolRental rental06 = new ToolRental(Integer.toUnsignedLong(6), ToolType.JACKHAMMER.getTypeCode() +
+                ToolBrand.RIDGID.getBrandCode(), date02, 4, 50, 0.0);
+
+        String result01 = rental01.processRentalAgreement();
+        System.out.println(result01);
+        String result02 = rental02.processRentalAgreement();
+        System.out.println(result02);
+        String result03 = rental03.processRentalAgreement();
+        System.out.println(result03);
+        String result04 = rental04.processRentalAgreement();
+        System.out.println(result04);
+        String result05 = rental05.processRentalAgreement();
+        System.out.println(result05);
+        String result06 = rental06.processRentalAgreement();
+        System.out.println(result06);
+
+        assertEquals(true, result01.contains("ERROR"));
+        assertEquals(true, result02.contains("$3.58"));
+        assertEquals(true, result03.contains("$3.35"));
+        assertEquals(true, result04.contains("$8.97"));
+        assertEquals(true, result05.contains("$14.95"));
+        assertEquals(true, result06.contains("$1.50"));
+    }
+
+    @Test
     void checkValidRentalsReturnCorrectFinalCharge() {
         ToolRental rental01 = new ToolRental(Integer.toUnsignedLong(1), ToolType.LADDER.getTypeCode() +
                 ToolBrand.RIDGID.getBrandCode(), dateFirst, 5, 0, 9.95);
-        ToolRental rental02 = new ToolRental(Integer.toUnsignedLong(1), ToolType.LADDER.getTypeCode() +
+        ToolRental rental02 = new ToolRental(Integer.toUnsignedLong(2), ToolType.LADDER.getTypeCode() +
                 ToolBrand.RIDGID.getBrandCode(), dateFirst, 3, 0, 5.97);
 
         double result01 = rental01.calculateFinalCharge(5, rental01.getDiscount());
