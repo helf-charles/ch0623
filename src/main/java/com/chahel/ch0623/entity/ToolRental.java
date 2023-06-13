@@ -159,17 +159,16 @@ public class ToolRental {
 
         int fullWeeks = rentalDays / 7;
         int remainderDays = rentalDays % 7;
-        int terminalWeekValue = checkoutDayOfWeek.getValue() + remainderDays;
 
         // Every full week has two Weekend days
         counter += 2 * fullWeeks;
 
         // This performs a DayOfWeek integer calculus for the final non-full rental week
-        if (terminalWeekValue >= 7) {
-            counter ++;
-        }
-        if ((terminalWeekValue % 7) < checkoutDayOfWeek.getValue()) {
-            counter++;
+        for (int i = 0; i < remainderDays; i++) {
+            checkoutDayOfWeek = checkoutDayOfWeek.plus(1);
+            if ((checkoutDayOfWeek == DayOfWeek.SATURDAY) || (checkoutDayOfWeek == DayOfWeek.SUNDAY)) {
+                counter++;
+            }
         }
 
         return counter;
