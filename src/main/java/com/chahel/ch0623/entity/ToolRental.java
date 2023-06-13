@@ -166,8 +166,9 @@ public class ToolRental {
 
         // This performs a DayOfWeek integer calculus for the final non-full rental week
         if (terminalWeekValue >= 7) {
-            counter += 2;
-        } else if (terminalWeekValue == 6) {
+            counter ++;
+        }
+        if ((terminalWeekValue % 7) < checkoutDayOfWeek.getValue()) {
             counter++;
         }
 

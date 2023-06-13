@@ -17,6 +17,7 @@ public class ToolRentalController {
 
     @PostMapping
     public ResponseEntity<ToolRental> processToolRental(@RequestBody ToolRental rental) {
+        System.out.println(rental.processRentalAgreement() + "\n----------\n");
         return ResponseEntity.ok(toolRentalServ.addOne(rental));
     }
 
