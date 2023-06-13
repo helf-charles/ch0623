@@ -14,8 +14,6 @@ import java.time.format.DateTimeFormatter;
 
 import com.chahel.ch0623.entity.EnumsForTools.*;
 
-import javax.tools.Tool;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,8 +23,7 @@ public class ToolRental {
     @Id
     @GeneratedValue
     private Long id;
-    private String toolCode;
-    private String brandCode;
+    private String toolBrandCode;
     private LocalDate checkoutDate;
     private int rentalDays;
     private int discount;
@@ -51,21 +48,21 @@ public class ToolRental {
     }
 
     public String generateInvoiceString(int chargeDays) {
-        ToolType toolType = ToolType.convertFromTypeCode(toolCode);
+        ToolType toolType = ToolType.convertFromTypeCode(toolBrandCode.substring(0,3));
         double preDiscountCharge = chargeDays * toolType.getTypePrice();
         LocalDate returnDate = LocalDate.of(checkoutDate.getYear(), checkoutDate.getMonth(),
                 checkoutDate.getDayOfMonth()).plusDays(rentalDays);
 
-        return "Tool Code: " + toolCode + brandCode + "\n"
+        return "Tool Code: " + toolBrandCode + "\n"
                 + "Tool Type: " + toolType.getTypeString() + "\n"
-                + "Tool Brand: " + ToolBrand.convertFromBrandCode(brandCode).getBrandString() + "\n"
+                + "Tool Brand: " + ToolBrand.convertFromBrandCode(toolBrandCode.substring(3)).getBrandString() + "\n"
                 + "RentalDays: " + rentalDays + "\n"
                 + "Checkout Date: " + formatDate(checkoutDate) + "\n"
                 + "Due Date: " + formatDate(returnDate) + "\n"
                 + "Daily Rental Charge: " + formatCurrency(toolType.getTypePrice()) + "\n"
                 + "Charge Days: " + chargeDays + "\n"
                 + "Pre-Discount Charge: " + formatCurrency(preDiscountCharge) + "\n"
-                + "Discount Percent: " + (int) discount + "%\n"
+                + "Discount Percent: " + discount + "%\n"
                 + "Discount Amount: " + formatCurrency(preDiscountCharge - finalCharge) + "\n"
                 + "Final Charge: " + formatCurrency(finalCharge);
     }
@@ -82,6 +79,9 @@ public class ToolRental {
         }
         if (!isValidBrandCodeValue()) {
             throw new ToolRentalException("BrandCode value not recognized");
+        }
+        if(!isValidToolBrandPairing()) {
+            throw new ToolRentalException("ToolCode and BrandCode pair invalid");
         }
         if (!isValidCheckoutDate()) {
             throw new ToolRentalException("CheckoutDate value is before current date");
@@ -107,7 +107,7 @@ public class ToolRental {
 
     public boolean isValidToolCodeValue() {
         for (ToolType type : ToolType.values()) {
-            if (toolCode.equals(type.getTypeCode())) {
+            if (toolBrandCode.substring(0,3).equals(type.getTypeCode())) {
                 return true;
             }
         }
@@ -116,11 +116,15 @@ public class ToolRental {
 
     public boolean isValidBrandCodeValue() {
         for (ToolBrand brand : ToolBrand.values()) {
-            if (brandCode.equals(brand.getBrandCode())) {
+            if (toolBrandCode.substring(3).equals(brand.getBrandCode())) {
                 return true;
             }
         }
         return false;
+    }
+
+    public boolean isValidToolBrandPairing() {
+        return ToolType.isValidBrandCode(ToolType.convertFromTypeCode(toolBrandCode.substring(0,3)), toolBrandCode.charAt(3));
     }
 
     public boolean isValidCheckoutDate() {
@@ -128,13 +132,13 @@ public class ToolRental {
     }
 
     public double calculateFinalCharge(int chargeableDays, double decimalDiscount) {
-        ToolType toolType = ToolType.convertFromTypeCode(toolCode);
+        ToolType toolType = ToolType.convertFromTypeCode(toolBrandCode.substring(0, 3));
         double price = toolType.getTypePrice();
         return ( ((double) chargeableDays * price) * (1.0 - decimalDiscount));
     }
 
     public int determineChargeableDays(int weekdays, int weekends, int holidays) {
-        ToolType toolType = ToolType.convertFromTypeCode(toolCode);
+        ToolType toolType = ToolType.convertFromTypeCode(toolBrandCode.substring(0, 3));
         int result = 0;
 
         // The ToolChargeDay Enum dictates whether this Tool can be charged for these types of Days

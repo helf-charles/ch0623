@@ -122,8 +122,14 @@ public class EnumsForTools {
         private LocalDate date;
 
         public static LocalDate calculateCurrentFixedHoliday(int month, int day) {
+            LocalDate date = LocalDate.of(LocalDate.now().getYear(), month, day);
+            if (date.getDayOfWeek() == DayOfWeek.SATURDAY) {
+                date = date.minusDays(1);
+            } else if (date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                date = date.plusDays(1);
+            }
             // We want THIS year's Holiday value
-            return LocalDate.of(LocalDate.now().getYear(), month, day);
+            return date;
         }
 
         public static LocalDate convertFloatingHolidayToFixed(ToolFloatingHoliday floatingHoliday) {
