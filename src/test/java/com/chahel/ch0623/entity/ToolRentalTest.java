@@ -34,6 +34,9 @@ public class ToolRentalTest {
         System.out.println((rental01.processRentalAgreement()));
     }
 
+    /**
+     * The 6 Test Cases specifically requested
+     */
     @Test
     void assessmentTestCases() {
         LocalDate date01 = LocalDate.of(2015, 9, 3);
